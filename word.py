@@ -10,7 +10,6 @@ from translate import Translator
 spacy_dict = {}
 class Words:
     def __init__(self, db_path):
-        print(db_path)
         self.db_path = db_path
         spacy_corpus = {
             'de': 'de_core_news_sm',
