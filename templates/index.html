@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Translator</title>
+    <script src="https://unpkg.com/htmx.org@1.9.8"></script>
+</head>
+<body>
+    <h1>Explore the World of Words</h1>
+    <form hx-post="/translate" hx-target="#result" hx-swap="innerHTML">
+        <label for="sourceLanguage">Choose source language:</label>
+        <select id="sourceLanguage" name="sourceLanguage" hx-get="/languages"></select>
+
+        <label for="targetLanguage">Choose target language:</label>
+        <select id="targetLanguage" name="targetLanguage" hx-get="/languages"></select>
+
+        <label for="word">Type a word:</label>
+        <input type="text" id="word" name="word" required>
+
+        <button type="submit">Translate</button>
+    </form>
+
+    <!-- Display the result -->
+    <div id="result"></div>
+
+    <script>
+        // Fetch and populate the language options on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchAndPopulateLanguages('sourceLanguage');
+            fetchAndPopulateLanguages('targetLanguage');
+        });
+
+        // Function to fetch and populate a dropdown with options
+        function fetchAndPopulateLanguages(dropdownId) {
+            fetch('/languages')
+                .then(response => response.json())
+                .then(data => {
+                    populateDropdown(dropdownId, data.languages);
+                })
+                .catch(error => console.error('Error fetching languages:', error));
+        }
+
+        // Function to populate a dropdown with options
+        function populateDropdown(dropdownId, languages) {
+            const dropdown = document.getElementById(dropdownId);
+            dropdown.innerHTML = ''; // Clear existing options
+
+            languages.forEach(language => {
+                const option = document.createElement('option');
+                option.value = language.code;
+                option.textContent = language.name;
+                dropdown.appendChild(option);
+            });
+        }
+    </script>
+</body>
+</html>
+
