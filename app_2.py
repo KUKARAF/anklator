@@ -20,7 +20,6 @@ class User(UserMixin):
 
     def __getattr__(self, item):
         if item == 'words_db_path':
-            print(f'wrds_path_returned!!!!!!!!!!!!!!!!!!!!! {self.username}')
             return f"user_db/{self.username}/words.sqlite"
 
 
@@ -133,7 +132,6 @@ def index():
 def translate():
     if request.method == 'POST':
         word = request.form['word']
-        print(current_user.username)
         words = Words(db_path=current_user.words_db_path)  # Pass the user's words database path
         translated_word = words.translate_word(word)
         return translated_word
