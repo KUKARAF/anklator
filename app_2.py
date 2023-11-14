@@ -14,16 +14,21 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin):
-    def __init__(self, user_id, username, words_db_path):
+    def __init__(self, user_id, username):
         self.id = user_id
         self.username = username
-        self.words_db_path = words_db_path
+
+    def __getattr__(self, item):
+        if item == 'words_db_path':
+            print(f'wrds_path_returned!!!!!!!!!!!!!!!!!!!!! {self.username}')
+            return f"user_db/{self.username}/words.sqlite"
+
 
 @login_manager.user_loader
 def load_user(user_id):
     user_data = get_user_by_id(user_id)
     if user_data:
-        return User(user_data[0], user_data[1], user_data[2])
+        return User(user_data[0], user_data[1])
     return None
 
 def get_user_by_id(user_id):
@@ -55,8 +60,6 @@ def create_tables():
         db.commit()
 def create_user_tables(user_words_db_path):
     # Create the necessary tables for a new user
-    user_db_folder = os.path.dirname(user_words_db_path)
-    os.makedirs(user_db_folder, exist_ok=True)  # Create the user database folder if it doesn't exist
 
     with sqlite3.connect(user_words_db_path) as user_db:
         cursor = user_db.cursor()
@@ -67,6 +70,14 @@ def create_user_tables(user_words_db_path):
                 translation_text TEXT NOT NULL,
                 language_id INTEGER NOT NULL,
                 FOREIGN KEY (language_id) REFERENCES language (id)
+            )
+        ''')
+        # Create the language table if it doesn't exist
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS language (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                language_name TEXT NOT NULL UNIQUE
             )
         ''')
         user_db.commit()
@@ -82,15 +93,12 @@ def create_user(username, password):
             return False
 
         password_hash = generate_password_hash(password, method='pbkdf2:sha256')
-
         cursor.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)',
                        (username, password_hash))
         db.commit()
-
-        # Create tables for the new user
-        user_words_db_path = f"user_db/{username}_words.sqlite"
-        create_user_tables(user_words_db_path)
-
+        user_db_folder = os.path.dirname(current_user.words_db_path)
+        os.makedirs(user_db_folder, exist_ok=True)  # Create the user database folder if it doesn't exist
+        create_user_tables(current_user.words_db_path)
         flash('Account created successfully!', 'success')
         return True
 
@@ -102,7 +110,7 @@ def verify_user(username, password):
         user = cursor.fetchone()
 
         if user and check_password_hash(user[2], password):
-            return User(user[0], user[1], app.config['DATABASE'])  # Pass the user's words database path
+            return User(user[0], user[1])
 
         flash('Invalid username or password. Please try again.', 'error')
         return None
@@ -125,9 +133,8 @@ def index():
 def translate():
     if request.method == 'POST':
         word = request.form['word']
-        user_words_db_path = current_user.words_db_path
-        print(f"User {current_user.username} has words_db_path: {current_user.words_db_path}")
-        words = Words(db_path=user_words_db_path)  # Pass the user's words database path
+        print(current_user.username)
+        words = Words(db_path=current_user.words_db_path)  # Pass the user's words database path
         translated_word = words.translate_word(word)
         return translated_word
 
