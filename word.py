@@ -1,8 +1,7 @@
 # word.py
 
 from fuzzywuzzy import fuzz, process
-# words.py
-
+import json
 import sqlite3
 import spacy
 from translate import Translator
@@ -75,29 +74,29 @@ class Words:
             cursor.execute('SELECT * FROM language')
             return cursor.fetchall()
 
-    def add_lang(self, search_term):
+    def add_lang(self, search_term=None):
         # Load language codes and names from the JSON file
         with open('lang_codes/language-codes.json', 'r') as file:
             languages = json.load(file)
-
+            if search_term == None:
+                return languages
+            if search_term not in languages:
+                return False
         # Filter languages based on the search term
-        filtered_languages = [lang for lang in languages if search_term in lang['Language'].lower()]
-
+        #filtered_languages = [lang for lang in languages if search_term in lang['Language'].lower()]
         # Add the filtered languages to the database and return them
-        added_languages = []
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            for lang in filtered_languages:
+            for lang in languages:
                 # Check if the language already exists in the database to avoid duplicates
                 cursor.execute('SELECT id FROM language WHERE language_code = ?', (lang['Language Code'],))
-                if cursor.fetchone() is None:
+                if cursor.fetchone() is None and search_term == lang['Language Code']:
                     cursor.execute('''
                         INSERT INTO language (language_name, language_code, spacy_corpus)
                         VALUES (?, ?, ?)
                     ''', (lang['Language'], lang['Language Code'], lang['Corpus Name']))
-                    added_languages.append(lang)
-
-        return added_languages
+                    conn.commit()
+                    return True
 
     def store_word(self, lemmatized_word, language, definition, translation):
         with sqlite3.connect(self.db_path) as conn:

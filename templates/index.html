@@ -8,6 +8,7 @@
 </head>
 <body>
     <h1>Explore the World of Words</h1>
+    <button type="button" id="addLanguageButton">Add Language</button>
     <form hx-post="/translate" hx-target="#result" hx-swap="innerHTML">
         <label for="sourceLanguage">Choose source language:</label>
         <select id="sourceLanguage" name="sourceLanguage" hx-get="/languages"></select>
@@ -53,6 +54,62 @@
                 dropdown.appendChild(option);
             });
         }
+
+    document.getElementById('addLanguageButton').addEventListener('click', function() {
+
+        var languageName = prompt("Please enter the new language name:");
+
+        if (languageName) {
+
+            // Replace '/add_language' with the correct endpoint if necessary
+
+            fetch('/add_language', {
+
+                method: 'POST',
+
+                headers: {
+
+                    'Content-Type': 'application/json',
+
+                    // Add any other headers like CSRF tokens if needed
+
+                },
+
+                body: JSON.stringify({ name: languageName })
+
+            })
+
+            .then(response => {
+
+                if (response.ok) {
+
+                    return response.json();
+
+                }
+
+                throw new Error('Network response was not ok.');
+
+            })
+
+            .then(data => {
+
+                console.log('Language added:', data);
+
+                // Optionally, update the language dropdowns or display a message
+
+            })
+
+            .catch(error => {
+
+                console.error('Error adding language:', error);
+
+            });
+
+        }
+
+    });
+
+
     </script>
 </body>
 </html>

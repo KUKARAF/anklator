@@ -3,6 +3,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
+import json
 from word import Words  # Import the Words class from the word module
 
 app = Flask(__name__)
@@ -72,11 +73,12 @@ def create_user_tables(user_words_db_path):
             )
         ''')
         # Create the language table if it doesn't exist
+        user_db.commit()
 
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS language (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                language_name TEXT NOT NULL UNIQUE
+                language_name TEXT NOT NULL UNIQUE,
                 language_code TEXT NOT NULL,
                 spacy_corpus TEXT NOT NULL
             )
@@ -97,9 +99,6 @@ def create_user(username, password):
         cursor.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)',
                        (username, password_hash))
         db.commit()
-        user_db_folder = os.path.dirname(current_user.words_db_path)
-        os.makedirs(user_db_folder, exist_ok=True)  # Create the user database folder if it doesn't exist
-        create_user_tables(current_user.words_db_path)
         flash('Account created successfully!', 'success')
         return True
 
@@ -147,6 +146,9 @@ def login():
 
         if user:
             login_user(user)
+            user_db_folder = os.path.dirname(current_user.words_db_path)
+            os.makedirs(user_db_folder, exist_ok=True)  # Create the user database folder if it doesn't exist
+            create_user_tables(current_user.words_db_path)
             flash('Login successful!', 'success')
             return redirect(url_for('index'))
 
@@ -195,6 +197,7 @@ def get_languages():
 def add_language():
     data = request.get_json()
     search_term = data.get('search', '').lower()
+    search_term = data.get('confirm', '').lower()
     words = Words(db_path=current_user.words_db_path)
     added_languages = words.add_lang(search_term)
     if added_languages:
