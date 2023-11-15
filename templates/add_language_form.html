@@ -1,0 +1,12 @@
+<!-- add_language_form.html -->
+    <form method="post" action="/add_language">
+        <label for="languageSelect">Select Language:</label>
+        <select id="languageSelect" name="language" required>
+            {% for language in available_languages %}
+                <option value="{{ language['Language Code'] }}">{{ language['Language'] }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="confirm" value="true">
+        <button type="submit">Add Language</button>
+    </form>
+
