@@ -126,37 +126,11 @@ def get_users_db():
 @login_required
 def index():
     # Your index view logic here
-    return render_template('index.html')
-
-@app.route('/add_language_form')
-def add_language_form():
-    words = Words(db_path=current_user.words_db_path)
-    available_languages = words.add_lang()
-    return render_template('add_language_form.html', available_languages=available_languages)
-
-
-
-@app.route('/add_language', methods=['POST'])
-@login_required
-def add_language():
-    lang = request.form.get("languageSelect")
-    print(lang)
-    words = Words(db_path=current_user.words_db_path)
-    added_language = words.add_lang(lang)
-    if added_language:
-        flash('Login successful!', 'success')
-        return 'OK', 200
-    else:
-        return jsonify({"success": False, "message": "Language not found or not added."}), 404
-
-@app.route('/translate', methods=['POST'])
-@login_required
-def translate():
-    if request.method == 'POST':
-        word = request.form['word']
-        words = Words(db_path=current_user.words_db_path)  # Pass the user's words database path
-        translated_word = words.translate_word(word)
-        return translated_word
+    current_user.words_db_path
+    words_instance = Words(current_user.words_db_path)
+    languages = words_instance.get_all_languages()  # Assuming this method exists in Words class
+    print(languages)
+    return render_template('index.html', languages=languages)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -186,8 +160,41 @@ def register():
 
     return render_template('register.html')
 
-@app.route('/logout')
 @login_required
+@app.route('/add_language_form')
+def add_language_form():
+    words = Words(db_path=current_user.words_db_path)
+    available_languages = words.add_lang()
+    return render_template('add_language_form.html', available_languages=available_languages)
+
+
+@login_required
+@app.route('/add-language', methods=[ 'POST'])
+def add_language():
+    lang = request.form.get("language")
+    words = Words(db_path=current_user.words_db_path)
+    added_language = words.add_lang(lang)
+    if added_language:
+        flash('Login successful!', 'success')
+        return 'OK', 200
+    else:
+        return jsonify({"success": False, "message": "Language not found or not added."}), 404
+
+
+@login_required
+@app.route('/translate', methods=['POST'])
+def translate():
+    if request.method == 'POST':
+        word = request.form['word']
+        sourceLanguage = request.form['sourceLanguage']
+        targetLanguage = request.form['targetLanguage']
+        words = Words(db_path=current_user.words_db_path)  # Pass the user's words database path
+        translated_word = words.translate_word(word, sourceLanguage, targetLanguage)
+        return translated_word
+
+
+@login_required
+@app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('index'))
@@ -202,12 +209,6 @@ def get_languages():
     current_user.words_db_path
     words_instance = Words(current_user.words_db_path)
     languages = words_instance.get_all_languages()  # Assuming this method exists in Words class
-    print(languages)
-    languages = [
-        {"code": "en", "name": "English"},
-        {"code": "es", "name": "Spanish"},
-        # Add more languages as needed
-    ]
     return jsonify({"languages": languages})
 
 
