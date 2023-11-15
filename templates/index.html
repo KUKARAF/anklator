@@ -8,7 +8,24 @@
 </head>
 <body>
     <h1>Explore the World of Words</h1>
-    <button type="button" id="addLanguageButton">Add Language</button>
+    <div hx-target="#languageOptions" hx-swap="outerHTML" hx-get="/add_language">
+        <button id="addLanguageButton" hx-get="/add_language_form">Add Language</button>
+    </div>
+
+    <div id="languageOptions" hx-include="#addLanguageForm"></div>
+
+    <!-- Add the form for interactive language addition -->
+    <div id="addLanguageForm" style="display: none;">
+        <form hx-post="/add_language" hx-trigger="submit" hx-target="#languageOptions" hx-swap="outerHTML">
+            <label for="languageSelect">Select Language:</label>
+            <select id="languageSelect" name="language">
+                <!-- Options will be populated dynamically -->
+            </select>
+            <input type="hidden" name="confirm" value="true">
+            <button type="submit">Add Language</button>
+        </form>
+    </div>
+
     <form hx-post="/translate" hx-target="#result" hx-swap="innerHTML">
         <label for="sourceLanguage">Choose source language:</label>
         <select id="sourceLanguage" name="sourceLanguage" hx-get="/languages"></select>
@@ -55,59 +72,6 @@
             });
         }
 
-    document.getElementById('addLanguageButton').addEventListener('click', function() {
-
-        var languageName = prompt("Please enter the new language name:");
-
-        if (languageName) {
-
-            // Replace '/add_language' with the correct endpoint if necessary
-
-            fetch('/add_language', {
-
-                method: 'POST',
-
-                headers: {
-
-                    'Content-Type': 'application/json',
-
-                    // Add any other headers like CSRF tokens if needed
-
-                },
-
-                body: JSON.stringify({ name: languageName })
-
-            })
-
-            .then(response => {
-
-                if (response.ok) {
-
-                    return response.json();
-
-                }
-
-                throw new Error('Network response was not ok.');
-
-            })
-
-            .then(data => {
-
-                console.log('Language added:', data);
-
-                // Optionally, update the language dropdowns or display a message
-
-            })
-
-            .catch(error => {
-
-                console.error('Error adding language:', error);
-
-            });
-
-        }
-
-    });
 
 
     </script>

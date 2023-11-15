@@ -82,14 +82,13 @@ class Words:
                 return languages
             if search_term not in languages:
                 return False
-        # Filter languages based on the search term
-        #filtered_languages = [lang for lang in languages if search_term in lang['Language'].lower()]
-        # Add the filtered languages to the database and return them
+
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
+            print(languages.keys())
             for lang in languages:
                 # Check if the language already exists in the database to avoid duplicates
-                cursor.execute('SELECT id FROM language WHERE language_code = ?', (lang['Language Code'],))
+                cursor.execute('SELECT id FROM language WHERE language_code = ?', (lang['Language Name'],))
                 if cursor.fetchone() is None and search_term == lang['Language Code']:
                     cursor.execute('''
                         INSERT INTO language (language_name, language_code, spacy_corpus)

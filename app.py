@@ -128,6 +128,27 @@ def index():
     # Your index view logic here
     return render_template('index.html')
 
+@app.route('/add_language_form')
+def add_language_form():
+    words = Words(db_path=current_user.words_db_path)
+    available_languages = words.add_lang()
+    return render_template('add_language_form.html', available_languages=available_languages)
+
+
+
+@app.route('/add_language', methods=['POST'])
+@login_required
+def add_language():
+    lang = request.form.get("languageSelect")
+    print(lang)
+    words = Words(db_path=current_user.words_db_path)
+    added_language = words.add_lang(lang)
+    if added_language:
+        flash('Login successful!', 'success')
+        return 'OK', 200
+    else:
+        return jsonify({"success": False, "message": "Language not found or not added."}), 404
+
 @app.route('/translate', methods=['POST'])
 @login_required
 def translate():
@@ -171,8 +192,8 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@app.route('/protected')
 @login_required
+@app.route('/protected')
 def protected():
     return f'Hello, {current_user.id}! This is a protected route.'
 
@@ -190,20 +211,6 @@ def get_languages():
     return jsonify({"languages": languages})
 
 
-@app.route('/add_language', methods=['POST'])
-
-@login_required
-
-def add_language():
-    data = request.get_json()
-    search_term = data.get('search', '').lower()
-    search_term = data.get('confirm', '').lower()
-    words = Words(db_path=current_user.words_db_path)
-    added_languages = words.add_lang(search_term)
-    if added_languages:
-        return jsonify({"success": True, "message": "Languages added successfully.", "languages": added_languages}), 200
-    else:
-        return jsonify({"success": False, "message": "No languages found or added."}), 404
 
 
 
