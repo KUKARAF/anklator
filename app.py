@@ -77,6 +77,8 @@ def create_user_tables(user_words_db_path):
             CREATE TABLE IF NOT EXISTS language (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 language_name TEXT NOT NULL UNIQUE
+                language_code TEXT NOT NULL,
+                spacy_corpus TEXT NOT NULL
             )
         ''')
         user_db.commit()
@@ -174,6 +176,10 @@ def protected():
 
 @app.route('/languages')
 def get_languages():
+    current_user.words_db_path
+    words_instance = Words(current_user.words_db_path)
+    languages = words_instance.get_all_languages()  # Assuming this method exists in Words class
+    print(languages)
     languages = [
         {"code": "en", "name": "English"},
         {"code": "es", "name": "Spanish"},
@@ -181,7 +187,23 @@ def get_languages():
     ]
     return jsonify({"languages": languages})
 
-# ... (the rest of your code remains unchanged)
+
+@app.route('/add_language', methods=['POST'])
+
+@login_required
+
+def add_language():
+    data = request.get_json()
+    search_term = data.get('search', '').lower()
+    words = Words(db_path=current_user.words_db_path)
+    added_languages = words.add_lang(search_term)
+    if added_languages:
+        return jsonify({"success": True, "message": "Languages added successfully.", "languages": added_languages}), 200
+    else:
+        return jsonify({"success": False, "message": "No languages found or added."}), 404
+
+
+
 
 if __name__ == '__main__':
     create_tables()  # Add this line to create tables

@@ -11,7 +11,7 @@ spacy_dict = {}
 class Words:
     def __init__(self, db_path):
         self.db_path = db_path
-        spacy_corpus = {
+        self.spacy_corpus = {
             'de': 'de_core_news_sm',
             'pl': 'pl_core_news_sm',
             'es': 'es_core_news_sm',
@@ -20,60 +20,89 @@ class Words:
         }
 
     def translate_word(self, lemmatized_word, source_language='en', target_language='es'):
+
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            # Check if lemmatized word exists in the database
             cursor.execute('SELECT translation_text FROM words WHERE lemmatized_word = ? AND language_id = (SELECT id FROM language WHERE language_name = ?)', (lemmatized_word, source_language))
             db_translation = cursor.fetchone()
-
             if db_translation:
                 return db_translation[0]
             else:
-                # Use translation library to translate the word
                 translator = Translator(to_lang=target_language)
                 translation = translator.translate(lemmatized_word)
+                cursor.execute('INSERT INTO words (lemmatized_word, language_id, translation_text) VALUES (?, (SELECT id FROM language WHERE language_name = ?), ?)', (lemmatized_word, target_language, translation))
+                conn.commit()
                 return translation
 
 
+        def create_tables(self):
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS words (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        lemmatized_word TEXT NOT NULL,
+                        language_id INTEGER,
+                        definition_id INTEGER,
+                        translation_id INTEGER,
+                        FOREIGN KEY (language_id) REFERENCES language(id),
+                        FOREIGN KEY (definition_id) REFERENCES definition(id),
+                        FOREIGN KEY (translation_id) REFERENCES translation(id)
+                    )
+                ''')
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS language (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        language_name TEXT NOT NULL
+                    )
+                ''')
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS definition (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        definition_text TEXT NOT NULL
+                    )
+                ''')
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS translation (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        translation_text TEXT NOT NULL
+                    )
+                ''')
 
-    def create_tables(self):
+    def get_all_languages(self):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS words (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    lemmatized_word TEXT NOT NULL,
-                    language_id INTEGER,
-                    definition_id INTEGER,
-                    translation_id INTEGER,
-                    FOREIGN KEY (language_id) REFERENCES language(id),
-                    FOREIGN KEY (definition_id) REFERENCES definition(id),
-                    FOREIGN KEY (translation_id) REFERENCES translation(id)
-                )
-            ''')
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS language (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    language_name TEXT NOT NULL
-                )
-            ''')
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS definition (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    definition_text TEXT NOT NULL
-                )
-            ''')
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS translation (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    translation_text TEXT NOT NULL
-                )
-            ''')
+            cursor.execute('SELECT * FROM language')
+            return cursor.fetchall()
+
+    def add_lang(self, search_term):
+        # Load language codes and names from the JSON file
+        with open('lang_codes/language-codes.json', 'r') as file:
+            languages = json.load(file)
+
+        # Filter languages based on the search term
+        filtered_languages = [lang for lang in languages if search_term in lang['Language'].lower()]
+
+        # Add the filtered languages to the database and return them
+        added_languages = []
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            for lang in filtered_languages:
+                # Check if the language already exists in the database to avoid duplicates
+                cursor.execute('SELECT id FROM language WHERE language_code = ?', (lang['Language Code'],))
+                if cursor.fetchone() is None:
+                    cursor.execute('''
+                        INSERT INTO language (language_name, language_code, spacy_corpus)
+                        VALUES (?, ?, ?)
+                    ''', (lang['Language'], lang['Language Code'], lang['Corpus Name']))
+                    added_languages.append(lang)
+
+        return added_languages
 
     def store_word(self, lemmatized_word, language, definition, translation):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('INSERT INTO language (language_name) VALUES (?)', (language,))
+            cursor.execute('INSERT INTO language (language_code, language_name, spacy_corpus) VALUES (?, ?, ?)', (language_code, language_name, spacy_corpus,))
             cursor.execute('INSERT INTO definition (definition_text) VALUES (?)', (definition,))
             cursor.execute('INSERT INTO translation (translation_text) VALUES (?)', (translation,))
             language_id = cursor.lastrowid
