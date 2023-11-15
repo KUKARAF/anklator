@@ -1,0 +1,48 @@
+[
+    {
+        "Language": "English",
+        "Language Code": "en",
+        "Corpus Name": "en_core_web_sm"
+    },
+    {
+        "Language": "Spanish",
+        "Language Code": "es",
+        "Corpus Name": "es_core_web_sm"
+    },
+    {
+        "Language": "German",
+        "Language Code": "de",
+        "Corpus Name": "de_core_web_sm"
+    },
+    {
+        "Language": "French",
+        "Language Code": "fr",
+        "Corpus Name": "fr_core_web_sm"
+    },
+    {
+        "Language": "Italian",
+        "Language Code": "it",
+        "Corpus Name": "it_core_web_sm"
+    },
+    {
+        "Language": "Portuguese",
+        "Language Code": "pt",
+        "Corpus Name": "pt_core_web_sm"
+    },
+    {
+        "Language": "Russian",
+        "Language Code": "ru",
+        "Corpus Name": "ru_core_web_sm"
+    },
+    {
+        "Language": "Japanese",
+        "Language Code": "ja",
+        "Corpus Name": "ja_core_web_sm"
+    },
+    {
+        "Language": "Chinese",
+        "Language Code": "zh",
+        "Corpus Name": "zh_core_web_sm"
+    }
+]
+
