@@ -54,17 +54,39 @@
     <!-- Display the result -->
     <div id="result"></div>
 
-    <script>
+	<script>
+	    // Load the stored language selections on page load
+	    window.onload = function() {
+		var sourceLanguage = document.getElementById('sourceLanguage');
+		var targetLanguage = document.getElementById('targetLanguage');
+		if(localStorage.getItem('sourceLanguage')) {
+		    sourceLanguage.value = localStorage.getItem('sourceLanguage');
+		}
+		if(localStorage.getItem('targetLanguage')) {
+		    targetLanguage.value = localStorage.getItem('targetLanguage');
+		}
+	    }
 
-	document.getElementById('flipLanguages').addEventListener('click', function() {
-	    var sourceLanguage = document.getElementById('sourceLanguage');
-	    var targetLanguage = document.getElementById('targetLanguage');
-	    var temp = sourceLanguage.value;
-	    sourceLanguage.value = targetLanguage.value;
-	    targetLanguage.value = temp;
-	});
+	    // Store the language selections whenever they change
+	    document.getElementById('sourceLanguage').addEventListener('change', function() {
+		localStorage.setItem('sourceLanguage', this.value);
+	    });
+	    document.getElementById('targetLanguage').addEventListener('change', function() {
+		localStorage.setItem('targetLanguage', this.value);
+	    });
 
-    </script>
+	    // Existing code for flipping languages
+	    document.getElementById('flipLanguages').addEventListener('click', function() {
+		var sourceLanguage = document.getElementById('sourceLanguage');
+		var targetLanguage = document.getElementById('targetLanguage');
+		var temp = sourceLanguage.value;
+		sourceLanguage.value = targetLanguage.value;
+		targetLanguage.value = temp;
+		// Also update the stored language selections
+		localStorage.setItem('sourceLanguage', sourceLanguage.value);
+		localStorage.setItem('targetLanguage', targetLanguage.value);
+	    });
+	</script>
 </body>
 </html>
 
