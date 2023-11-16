@@ -4,15 +4,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
 import json
-from word import Words  # Import the Words class from the word module
+from word import Words
 from datetime import timedelta
+from dotenv import load_dotenv
 
-
+load_dotenv()
 app = Flask(__name__)
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(weeks=2)
-app.config['SECRET_KEY'] = 'your-secret-key'
+app.config['SECRET_KEY'] = os.getenv('SECRET')
 app.config['USERS_DATABASE'] = 'passwords.sqlite'  # Specify the user database path
-
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
