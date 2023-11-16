@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
-    <h1>Explore the World of Words</h1>
+    <h1>Ankilator</h1>
     <div>
         <button id="addLanguageButton"  hx-target="#languageOptions" hx-swap="innerHTML" hx-get="/add_language_form">Add Language</button>
 
@@ -30,7 +30,7 @@
     </div>
 
     <form hx-post="{{ url_for('translate') }}" hx-target="#result" hx-swap="innerHTML">
-        <label for="sourceLanguage">Choose source language:</label>
+        <label for="sourceLanguage"></label>
         <select id="sourceLanguage" name="sourceLanguage">
             {% for language in languages %}
                 <option value="{{ language }}">{{ language }}</option>
@@ -38,14 +38,14 @@
 	</select>
 		<button id="flipLanguages"><i class="fas fa-exchange-alt"></i></button>
 
-        <label for="targetLanguage">Choose target language:</label>
+        <label for="targetLanguage"></label>
         <select id="targetLanguage" name="targetLanguage">
             {% for language in languages %}
                 <option value="{{ language }}">{{ language }}</option>
             {% endfor %}
 	</select>
 
-        <label for="word">Type a word:</label>
+        <label for="word"></label>
         <input type="text" id="word" name="word" required>
 
         <button type="submit">Translate</button>
