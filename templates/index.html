@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
-    <h1>Explore the World of Words</h1>
+    <h1>Ankilator</h1>
     <div>
         <button id="addLanguageButton"  hx-target="#languageOptions" hx-swap="innerHTML" hx-get="/add_language_form">Add Language</button>
 
@@ -30,7 +30,7 @@
     </div>
 
     <form hx-post="{{ url_for('translate') }}" hx-target="#result" hx-swap="innerHTML">
-        <label for="sourceLanguage">Choose source language:</label>
+        <label for="sourceLanguage"></label>
         <select id="sourceLanguage" name="sourceLanguage">
             {% for language in languages %}
                 <option value="{{ language }}">{{ language }}</option>
@@ -38,14 +38,14 @@
 	</select>
 		<button id="flipLanguages"><i class="fas fa-exchange-alt"></i></button>
 
-        <label for="targetLanguage">Choose target language:</label>
+        <label for="targetLanguage"></label>
         <select id="targetLanguage" name="targetLanguage">
             {% for language in languages %}
                 <option value="{{ language }}">{{ language }}</option>
             {% endfor %}
 	</select>
 
-        <label for="word">Type a word:</label>
+        <label for="word"></label>
         <input type="text" id="word" name="word" required>
 
         <button type="submit">Translate</button>
@@ -54,17 +54,39 @@
     <!-- Display the result -->
     <div id="result"></div>
 
-    <script>
+	<script>
+	    // Load the stored language selections on page load
+	    window.onload = function() {
+		var sourceLanguage = document.getElementById('sourceLanguage');
+		var targetLanguage = document.getElementById('targetLanguage');
+		if(localStorage.getItem('sourceLanguage')) {
+		    sourceLanguage.value = localStorage.getItem('sourceLanguage');
+		}
+		if(localStorage.getItem('targetLanguage')) {
+		    targetLanguage.value = localStorage.getItem('targetLanguage');
+		}
+	    }
 
-	document.getElementById('flipLanguages').addEventListener('click', function() {
-	    var sourceLanguage = document.getElementById('sourceLanguage');
-	    var targetLanguage = document.getElementById('targetLanguage');
-	    var temp = sourceLanguage.value;
-	    sourceLanguage.value = targetLanguage.value;
-	    targetLanguage.value = temp;
-	});
+	    // Store the language selections whenever they change
+	    document.getElementById('sourceLanguage').addEventListener('change', function() {
+		localStorage.setItem('sourceLanguage', this.value);
+	    });
+	    document.getElementById('targetLanguage').addEventListener('change', function() {
+		localStorage.setItem('targetLanguage', this.value);
+	    });
 
-    </script>
+	    // Existing code for flipping languages
+	    document.getElementById('flipLanguages').addEventListener('click', function() {
+		var sourceLanguage = document.getElementById('sourceLanguage');
+		var targetLanguage = document.getElementById('targetLanguage');
+		var temp = sourceLanguage.value;
+		sourceLanguage.value = targetLanguage.value;
+		targetLanguage.value = temp;
+		// Also update the stored language selections
+		localStorage.setItem('sourceLanguage', sourceLanguage.value);
+		localStorage.setItem('targetLanguage', targetLanguage.value);
+	    });
+	</script>
 </body>
 </html>
 
