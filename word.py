@@ -10,13 +10,6 @@ spacy_dict = {}
 class Words:
     def __init__(self, db_path):
         self.db_path = db_path
-        self.spacy_corpus = {
-            'de': 'de_core_news_sm',
-            'pl': 'pl_core_news_sm',
-            'es': 'es_core_news_sm',
-            'en': 'en_core_web_sm',
-            'ru': 'ru_core_news_sm',
-        }
 
     def translate_word(self, lemmatized_word, source_language='en', target_language='es'):
 
@@ -34,43 +27,6 @@ class Words:
                 conn.commit()
                 return translation
 
-
-        def create_tables(self):
-            
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS words (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        word TEXT NOT NULL,
-                        language_id INTEGER,
-                        definition_id INTEGER,
-                        translation_id INTEGER,
-                        FOREIGN KEY (language_id) REFERENCES language(id),
-                        FOREIGN KEY (words) REFERENCES words(id),
-                        FOREIGN KEY (definition_id) REFERENCES definition(id),
-                        FOREIGN KEY (translation_id) REFERENCES translation(id)
-                    )
-                ''')
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS language (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        language_name TEXT NOT NULL
-                    )
-                ''')
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS definition (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        definition_text TEXT NOT NULL
-                    )
-                ''')
-                conn.commit()
-
-    def get_all_languages(self):
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute('SELECT language_name FROM language')
-            return [language[0] for language in cursor.fetchall()]
 
     def search_language(self, language_code, language_data):
         for language in language_data:

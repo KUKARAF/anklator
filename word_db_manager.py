@@ -1,51 +1,51 @@
 import sqlite3
+from user_db_manager import user_db
 
+class word_db:
 
-class DBmanager:
+    def __init__(self, app):
+        self.user_db = user_db(app)
 
-    def __init__(self, db_path):
-        self.db_path = db_path
-
-def create_word_tables(self):
-    with sqlite3.connect(self.db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS words (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                lemmatized_word TEXT NOT NULL,
-                language_id INTEGER,
-                definition_id INTEGER,
-                translation_id INTEGER,
-                FOREIGN KEY (language_id) REFERENCES language(id),
-                FOREIGN KEY (definition_id) REFERENCES definition(id),
-                FOREIGN KEY (translation_id) REFERENCES translation(id)
-            )
-        ''')
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS word_relationships (
-                word_id1 INTEGER,
-                word_id2 INTEGER,
-                FOREIGN KEY (word_id1) REFERENCES words(id),
-                FOREIGN KEY (word_id2) REFERENCES words(id)
-            )
-        ''')
+    def create_word_tables(self):
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS languages (
+                CREATE TABLE IF NOT EXISTS words (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    language TEXT NOT NULL
+                    lemmatized_word TEXT NOT NULL,
+                    language_id INTEGER,
+                    definition_id INTEGER,
+                    translation_id INTEGER,
+                    FOREIGN KEY (language_id) REFERENCES language(id),
+                    FOREIGN KEY (definition_id) REFERENCES definition(id),
+                    FOREIGN KEY (translation_id) REFERENCES translation(id)
                 )
             ''')
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS definitions (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    definition_text TEXT NOT NULL
+                CREATE TABLE IF NOT EXISTS word_relationships (
+                    word_id1 INTEGER,
+                    word_id2 INTEGER,
+                    FOREIGN KEY (word_id1) REFERENCES words(id),
+                    FOREIGN KEY (word_id2) REFERENCES words(id)
                 )
             ''')
+            cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS languages (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        language TEXT NOT NULL
+                    )
+                ''')
+            cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS definitions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        definition_text TEXT NOT NULL
+                    )
+                ''')
             conn.commit()
 
 
 
-    def translate(self, lemmatized_word, source_language='en', target_language='es'):
+    def add_translation(self, lemmatized_word, source_language='en', target_language='es'):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT id FROM words WHERE lemmatized_word = ? AND language_id = (SELECT id FROM language WHERE language_name = ?)', (lemmatized_word, source_language))
@@ -72,7 +72,7 @@ def create_word_tables(self):
                 cursor.execute('INSERT INTO word_relationships (word_id1, word_id2) VALUES (?, ?)', (word_id, translation_id))
             conn.commit()
 
-    def add_lang(self, lang)
+    def add_lang(self, lang):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
                 # Check if the language already exists in the database to avoid duplicates
@@ -88,3 +88,8 @@ def create_word_tables(self):
                     return True
                 else: 
                     return False
+    def get_all_languages(self):
+        with sqlite3.connect(self.user_db.word_db_path()) as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT language_name FROM language')
+            return [language[0] for language in cursor.fetchall()]

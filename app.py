@@ -1,5 +1,4 @@
-rom flask import Flask, render_template, request, g, redirect, url_for, flash, jsonify
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
@@ -7,123 +6,33 @@ import json
 from word import Words
 from datetime import timedelta
 from dotenv import load_dotenv
-from db_manager import DBmanager
+from word_db_manager import word_db
+from user_db_manager import user_db
 
 load_dotenv()
 app = Flask(__name__)
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(weeks=2)
 app.config['SECRET_KEY'] = os.getenv('SECRET')
 app.config['USERS_DATABASE'] = 'passwords.sqlite'  # Specify the user database path
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-
-class User(UserMixin):
-    def __init__(self, user_id, username):
-        self.id = user_id
-        self.username = username
-
-    def __getattr__(self, item):
-        if item == 'words_db_path':
-            return f"user_db/{self.username}/words.sqlite"
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    user_data = get_user_by_id(user_id)
-    if user_data:
-        return User(user_data[0], user_data[1])
-    return None
 
-def get_user_by_id(user_id):
-    with app.app_context():
-        db = get_users_db()
-        cursor = db.cursor()
-        cursor.execute('SELECT * FROM users WHERE id=?', (user_id,))
-        return cursor.fetchone()
-
-def get_user_by_username(username):
-    with app.app_context():
-        db = get_users_db()
-        cursor = db.cursor()
-        cursor.execute('SELECT * FROM users WHERE username=?', (username,))
-        return cursor.fetchone()
-
-def create_tables():
-    with app.app_context():
-        db = get_users_db()
-        cursor = db.cursor()
-        # Create the users table if it doesn't exist
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL
-            )
-        ''')
-        db.commit()
-def create_word_tables(user_words_db_path):
-    db.DBmanager(user_words_db_path)
-    db.create_word_tables()
-
-
-def create_user(username, password):
-    with app.app_context():
-        db = get_users_db()
-        cursor = db.cursor()
-
-        if get_user_by_username(username):
-            flash('Username already exists. Please choose a different one.', 'error')
-            return False
-
-        password_hash = generate_password_hash(password, method='pbkdf2:sha256')
-        cursor.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)',
-                       (username, password_hash))
-        db.commit()
-        flash('Account created successfully!', 'success')
-        return True
-
-def verify_user(username, password):
-    with app.app_context():
-        db = get_users_db()
-        cursor = db.cursor()
-        cursor.execute('SELECT * FROM users WHERE username=?', (username,))
-        user = cursor.fetchone()
-
-        if user and check_password_hash(user[2], password):
-            return User(user[0], user[1])
-
-        flash('Invalid username or password. Please try again.', 'error')
-        return None
-
-def get_users_db():
-    db = getattr(g, '_users_database', None)
-    if db is None:
-        db = g._users_database = sqlite3.connect(app.config['USERS_DATABASE'])
-    return db
 
 
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
+    wdb = word_db(app)
     # Your index view logic here
-    current_user.words_db_path
-    words_instance = Words(current_user.words_db_path)
-    languages = words_instance.get_all_languages()  # Assuming this method exists in Words class
-    print(languages)
-    return render_template('index.html', languages=languages)
+    return render_template('index.html', languages=wdb.get_all_languages())
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        udb = user_db(app)
         username = request.form['username']
         password = request.form['password']
-        user = verify_user(username, password)
-
-        if user:
-            login_user(user)
-            user_db_folder = os.path.dirname(current_user.words_db_path)
-            os.makedirs(user_db_folder, exist_ok=True)  # Create the user database folder if it doesn't exist
-            create_user_tables(current_user.words_db_path)
+        if udb.login_user(user, username, password)
             flash('Login successful!', 'success')
             return redirect(url_for('index'))
 
@@ -134,7 +43,8 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-
+        
+        udb = user_db(app)
         if create_user(username, password):
             return redirect(url_for('login'))
 
@@ -143,18 +53,16 @@ def register():
 @login_required
 @app.route('/add_language_form')
 def add_language_form():
-    words = Words(db_path=current_user.words_db_path)
-    available_languages = words.add_lang()
-    return render_template('add_language_form.html', available_languages=available_languages)
+    wdb = word_db(app)
+    return render_template('add_language_form.html', available_languages=wdb.get_all_languages())
 
 
 @login_required
 @app.route('/add-language', methods=[ 'POST'])
 def add_language():
     lang = request.form.get("language")
-    words = Words(db_path=current_user.words_db_path)
-    added_language = words.add_lang(lang)
-    if added_language:
+    wdb = word_db(app)
+    if wdb.add_lang(lang):
         flash('Login successful!', 'success')
         return 'OK', 200
     else:
@@ -190,9 +98,6 @@ def get_languages():
     words_instance = Words(current_user.words_db_path)
     languages = words_instance.get_all_languages()  # Assuming this method exists in Words class
     return jsonify({"languages": languages})
-
-
-
 
 
 
