@@ -5,10 +5,12 @@ import sqlite3
 import os
 import json
 from word import Words  # Import the Words class from the word module
+from datetime import timedelta
+
 
 app = Flask(__name__)
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(weeks=2)
 app.config['SECRET_KEY'] = 'your-secret-key'
-app.config['DATABASE'] = 'word_db.sqlite'  # Specify the word database path
 app.config['USERS_DATABASE'] = 'passwords.sqlite'  # Specify the user database path
 
 login_manager = LoginManager(app)
