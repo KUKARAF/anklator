@@ -6,7 +6,7 @@ class DBmanager:
     def __init__(self, db_path):
         self.db_path = db_path
 
-def create_tables(self):
+def create_word_tables(self):
     with sqlite3.connect(self.db_path) as conn:
         cursor = conn.cursor()
         cursor.execute('''

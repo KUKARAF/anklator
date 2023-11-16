@@ -7,6 +7,7 @@ import json
 from word import Words
 from datetime import timedelta
 from dotenv import load_dotenv
+from db_manager import DBmanager
 
 load_dotenv()
 app = Flask(__name__)
@@ -60,32 +61,9 @@ def create_tables():
             )
         ''')
         db.commit()
-def create_user_tables(user_words_db_path):
-    # Create the necessary tables for a new user
-
-    with sqlite3.connect(user_words_db_path) as user_db:
-        cursor = user_db.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS words (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                word TEXT NOT NULL,
-                translation_text TEXT NOT NULL,
-                language_id INTEGER NOT NULL,
-                FOREIGN KEY (language_id) REFERENCES language (id)
-            )
-        ''')
-        # Create the language table if it doesn't exist
-        user_db.commit()
-
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS language (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                language_name TEXT NOT NULL UNIQUE,
-                language_code TEXT NOT NULL,
-                spacy_corpus TEXT NOT NULL
-            )
-        ''')
-        user_db.commit()
+def create_word_tables(user_words_db_path):
+    db.DBmanager(user_words_db_path)
+    db.create_word_tables()
 
 
 def create_user(username, password):
