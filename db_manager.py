@@ -71,3 +71,20 @@ def create_tables(self):
                 translation_id = self.translate(lemmatized_word, language, translation)
                 cursor.execute('INSERT INTO word_relationships (word_id1, word_id2) VALUES (?, ?)', (word_id, translation_id))
             conn.commit()
+
+    def add_lang(self, lang)
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+                # Check if the language already exists in the database to avoid duplicates
+            cursor.execute('SELECT id FROM language WHERE language_code = ?', (lang['Language Code'],))
+            if cursor.fetchone() is None:
+                if  search_term == lang['Language Code']:
+                    cursor.execute('''
+                        INSERT INTO language (language_name, language_code, spacy_corpus)
+                        VALUES (?, ?, ?)
+                    ''', (lang['Language'], lang['Language Code'], lang['Corpus Name']))
+                    download(lang['Corpus Name'])
+                    conn.commit()
+                    return True
+                else: 
+                    return False
