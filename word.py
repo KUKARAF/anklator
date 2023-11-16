@@ -30,7 +30,7 @@ class Words:
             else:
                 translator = Translator(to_lang=target_language)
                 translation = translator.translate(lemmatized_word)
-                cursor.execute('INSERT INTO words (lemmatized_word, language_id, translation_text) VALUES (?, (SELECT id FROM language WHERE language_name = ?), ?)', (lemmatized_word, target_language, translation))
+                cursor.execute('INSERT INTO words (lemmatized_word, language_id) VALUES (?, (SELECT id FROM language WHERE language_name = ?), ?)', (lemmatized_word, target_language, translation))
                 conn.commit()
                 return translation
 
@@ -41,11 +41,12 @@ class Words:
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS words (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        lemmatized_word TEXT NOT NULL,
+                        word TEXT NOT NULL,
                         language_id INTEGER,
                         definition_id INTEGER,
                         translation_id INTEGER,
                         FOREIGN KEY (language_id) REFERENCES language(id),
+                        FOREIGN KEY (words) REFERENCES words(id),
                         FOREIGN KEY (definition_id) REFERENCES definition(id),
                         FOREIGN KEY (translation_id) REFERENCES translation(id)
                     )
@@ -62,12 +63,7 @@ class Words:
                         definition_text TEXT NOT NULL
                     )
                 ''')
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS translation (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        translation_text TEXT NOT NULL
-                    )
-                ''')
+                conn.commit()
 
     def get_all_languages(self):
         with sqlite3.connect(self.db_path) as conn:

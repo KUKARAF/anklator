@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, g, redirect, url_for, flash, jsonify
+rom flask import Flask, render_template, request, g, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
@@ -68,7 +68,7 @@ def create_user_tables(user_words_db_path):
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS words (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                lemmatized_word TEXT NOT NULL,
+                word TEXT NOT NULL,
                 translation_text TEXT NOT NULL,
                 language_id INTEGER NOT NULL,
                 FOREIGN KEY (language_id) REFERENCES language (id)
