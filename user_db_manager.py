@@ -55,7 +55,7 @@ class user_db:
         with self.app.app_context():
             user = self.verify_user(username, password)
             if user:
-                login_user(username, password)
+                login_user(user, password)
                 flash('Login successful!', 'success')
                 return True
             

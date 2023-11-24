@@ -42,7 +42,6 @@ def get_users_db():
         db = g._users_database = sqlite3.connect(app.config['USERS_DATABASE'])
     return db
 
-
 def get_user_by_id(user_id):
     with app.app_context():
         db = get_users_db()
@@ -62,13 +61,12 @@ def get_user_by_username(username):
 @login_required
 def index():
     wdb = word_db(app)
-    # Your index view logic here
     langs = wdb.get_all_languages()
-    if langs: 
+    print(langs)
+    if langs:
         return render_template('index.html', languages=wdb.get_all_languages())
-    else: 
+    else:
         return render_template('index.html', languages=[""])
-        
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -89,12 +87,15 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
+
         udb = user_db(app)
         if udb.create_user(username, password):
             return redirect(url_for('login'))
 
     return render_template('register.html')
+
+
+
 
 @login_required
 @app.route('/add_language_form')
@@ -102,6 +103,14 @@ def add_language_form():
     with open('lang_codes/language-codes.json', 'r') as file:
         languages = json.load(file)
         return render_template('add_language_form.html', available_languages=languages)
+
+
+
+@app.route('/create_db')
+def create_db():
+    wdb = word_db(app)
+    wdb.create_word_tables()
+    return 'Word database created successfully!'
 
 
 @login_required
@@ -117,6 +126,8 @@ def add_language():
         return jsonify({"success": False, "message": "Language not found or not added."}), 404
 
 
+
+
 @login_required
 @app.route('/translate', methods=['POST'])
 def translate():
@@ -127,7 +138,6 @@ def translate():
         wdb = word_db(app)
         #words = Words(db_path=current_user.words_db_path)  # Pass the user's words database path
         translated_word = wdb.add_translation(word, sourceLanguage, targetLanguage)
-        
         if not translated_word:
             translated_word = "It doesn't look like anything to me"
         return translated_word
