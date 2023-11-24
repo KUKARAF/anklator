@@ -62,7 +62,6 @@ def get_user_by_username(username):
 def index():
     wdb = word_db(app)
     langs = wdb.get_all_languages()
-    print(langs)
     if langs:
         return render_template('index.html', languages=wdb.get_all_languages())
     else:
@@ -118,7 +117,6 @@ def create_db():
 def add_language():
     lang = request.form.get("language")
     wdb = word_db(app)
-    print(lang)
     if wdb.add_lang(lang):
         flash('Login successful!', 'success')
         return 'OK', 200

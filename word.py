@@ -18,7 +18,6 @@ class Words:
             cursor.execute('SELECT translation_text FROM words WHERE lemmatized_word = ? AND language_id = (SELECT id FROM language WHERE language_name = ?)', (lemmatized_word, source_language))
             db_translation = cursor.fetchone()
             if db_translation:
-                print("returning existing word")
                 return db_translation[0]
             else:
                 translator = Translator(to_lang=target_language)

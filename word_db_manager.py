@@ -103,7 +103,6 @@ class word_db:
                 translator = Translator(to_lang=target_language)
                 translation = translator.translate(lemmatized_word)
                 # Insert the new translation into the database
-                print(translation, target_language)
                 cursor.execute('''
                     INSERT INTO words (lemmatized_word, language_id) 
                     VALUES (?, (SELECT id FROM languages WHERE language_name = ?))
@@ -145,7 +144,6 @@ class word_db:
                 lang = next((item for item in languages if item["Language Code"] == lang), None)
                 cursor.execute('SELECT id FROM languages WHERE language = ?', (lang['Language'],))
                 if cursor.fetchone() is None:
-                        print(lang)
                         cursor.execute('''
                             INSERT INTO languages (language, language_code, spacy_corpus)
                             VALUES (?, ?, ?)
