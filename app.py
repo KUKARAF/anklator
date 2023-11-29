@@ -4,7 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
 import json
-from word import Words
 from datetime import timedelta
 from dotenv import load_dotenv
 from word_db_manager import word_db
@@ -136,8 +135,9 @@ def translate():
         wdb = word_db(app)
         #words = Words(db_path=current_user.words_db_path)  # Pass the user's words database path
         translated_word = wdb.add_translation(word, sourceLanguage, targetLanguage)
+        print(translated_word)
         if not translated_word:
-            translated_word = "It doesn't look like anything to me"
+            translated_word = "That doesn't look like anything to me"
         return translated_word
 
 
