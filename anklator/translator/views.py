@@ -7,6 +7,10 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+def add_language_form(request):
+    with open('lang_codes/language-codes.json', 'r') as file:
+        language_codes = json.load(file)
+    return render(request, 'add_language_form.html', {'language_codes': language_codes})
 
 def index(request):
     langs = Language.objects.all()  # Or any other method you have defined

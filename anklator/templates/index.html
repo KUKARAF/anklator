@@ -29,7 +29,7 @@
         </form>
     </div>
 
-    <form hx-post="{%  url 'add_translate' %}" hx-target="#result" hx-swap="innerHTML">
+    <form hx-post="{% url 'add_translation' %}" hx-target="#result" hx-swap="innerHTML">
         <label for="sourceLanguage"></label>
         <select id="sourceLanguage" name="sourceLanguage">
             {% for language in languages %}
