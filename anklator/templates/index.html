@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Translator</title>
+    <script src="https://unpkg.com/htmx.org@1.9.8"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <h1>Ankilator</h1>
+    <div>
+        <button id="addLanguageButton"  hx-target="#languageOptions" hx-swap="innerHTML" hx-get="/add_language_form">Add Language</button>
+
+
+    </div>
+
+    <div id="languageOptions" hx-include="#addLanguageForm"></div>
+
+    <!-- Add the form for interactive language addition -->
+    <div id="addLanguageForm" style="display: none;">
+        <form hx-post="/add_language" hx-trigger="submit" hx-target="#languageOptions" hx-swap="outerHTML">
+            <label for="languageSelect">Select Language:</label>
+            <select id="languageSelect" name="language">
+                <!-- Options will be populated dynamically -->
+            </select>
+            <input type="hidden" name="confirm" value="true">
+            <button type="submit">Add Language</button>
+        </form>
+    </div>
+
+    <form hx-post="{%  url 'add_translate' %}" hx-target="#result" hx-swap="innerHTML">
+        <label for="sourceLanguage"></label>
+        <select id="sourceLanguage" name="sourceLanguage">
+            {% for language in languages %}
+                <option value="{{ language }}">{{ language }}</option>
+            {% endfor %}
+	</select>
+		<button id="flipLanguages"><i class="fas fa-exchange-alt"></i></button>
+
+        <label for="targetLanguage"></label>
+        <select id="targetLanguage" name="targetLanguage">
+            {% for language in languages %}
+                <option value="{{ language }}">{{ language }}</option>
+            {% endfor %}
+	</select>
+
+        <label for="word"></label>
+        <input type="text" id="word" name="word" required>
+
+        <button type="submit">Translate</button>
+    </form>
+
+    <!-- Display the result -->
+    <div id="result"></div>
+
+	<script>
+	    // Load the stored language selections on page load
+	    window.onload = function() {
+		var sourceLanguage = document.getElementById('sourceLanguage');
+		var targetLanguage = document.getElementById('targetLanguage');
+		if(localStorage.getItem('sourceLanguage')) {
+		    sourceLanguage.value = localStorage.getItem('sourceLanguage');
+		}
+		if(localStorage.getItem('targetLanguage')) {
+		    targetLanguage.value = localStorage.getItem('targetLanguage');
+		}
+	    }
+
+	    // Store the language selections whenever they change
+	    document.getElementById('sourceLanguage').addEventListener('change', function() {
+		localStorage.setItem('sourceLanguage', this.value);
+	    });
+	    document.getElementById('targetLanguage').addEventListener('change', function() {
+		localStorage.setItem('targetLanguage', this.value);
+	    });
+
+	    // Existing code for flipping languages
+	    document.getElementById('flipLanguages').addEventListener('click', function() {
+		var sourceLanguage = document.getElementById('sourceLanguage');
+		var targetLanguage = document.getElementById('targetLanguage');
+		var temp = sourceLanguage.value;
+		sourceLanguage.value = targetLanguage.value;
+		targetLanguage.value = temp;
+		// Also update the stored language selections
+		localStorage.setItem('sourceLanguage', sourceLanguage.value);
+		localStorage.setItem('targetLanguage', targetLanguage.value);
+	    });
+	</script>
+</body>
+</html>
+

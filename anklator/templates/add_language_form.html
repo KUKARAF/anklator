@@ -1,0 +1,15 @@
+<form id="search-form"
+    hx-post="{{ url_for('add_language') }}" hx-trigger="submit" hx-target="#results-box">
+        <label for="languageSelect">Select Language:</label>
+        <select id="languageSelect" name="language" required>
+            {% for language in available_languages %}
+                <option value="{{ language['Language Code'] }}">{{ language['Language'] }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="confirm" value="true">
+
+<input type="submit" value="look up" form="search-form">
+
+<div id="results-box"></div>
+
+
